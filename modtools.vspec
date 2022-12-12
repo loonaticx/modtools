@@ -1,0 +1,3 @@
+personal:root:path=$PLAYER/modtools
+prebuilt:root:path=$PLAYER/prebuilt/modtools
+default:root:path=$PLAYER/modtools

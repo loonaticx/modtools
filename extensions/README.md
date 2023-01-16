@@ -7,6 +7,6 @@ Example:
 modtools
         | extensions
 		            | toon_snapshot
-					| my_mod
+			    | my_mod
 
 ```

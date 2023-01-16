@@ -1,3 +1,9 @@
+# Custom extensions/installs:
+toontown/*
+extensions/*
+sandbox/*
+
+
 /__init__.py
 Makefile
 pp.dep

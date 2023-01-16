@@ -38,8 +38,8 @@ class ModularBase(ToonBase.ToonBase):
 
         self.modular = True
         self.headless = pipe == 'none' or pipe == 'offscreen'
-        if self.headless:
-            self.initHeadlessInterface()
+        # if self.headless:
+        #     self.initHeadlessInterface()
 
         # TODO: CLEANUP LATER
 
@@ -94,12 +94,11 @@ class ModularBase(ToonBase.ToonBase):
         self.endlessQuietZone = False
         self.wantDynamicShadows = 0
         self.exitErrorCode = 0
-        # todo: add different camera if we're headless since itll otherwise return as a NoneType
-        if camera:
+        if not self.headless:
             camera.setPosHpr(0, 0, 0, 0, 0, 0)
-        self.camLens.setMinFov(ToontownGlobals.DefaultCameraFov / (4. / 3.))
-        self.camLens.setNearFar(ToontownGlobals.DefaultCameraNear, ToontownGlobals.DefaultCameraFar)
-        self.musicManager.setVolume(0.65)
+            self.camLens.setMinFov(ToontownGlobals.DefaultCameraFov / (4. / 3.))
+            self.camLens.setNearFar(ToontownGlobals.DefaultCameraNear, ToontownGlobals.DefaultCameraFar)
+            self.musicManager.setVolume(0.65)
         self.setBackgroundColor(ToontownGlobals.DefaultBackgroundColor)
         tpm = TextPropertiesManager.getGlobalPtr()
         candidateActive = TextProperties()

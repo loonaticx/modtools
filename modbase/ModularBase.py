@@ -271,6 +271,26 @@ class ModularBase(ToonBase.ToonBase):
         self.rightCells = [mm.addGridCell(5, 2, -1.33333333333, 1.33333333333, -1.0, 1.0, base.a2dTopRight, (-0.222222, 0, -1.16667)), mm.addGridCell(5, 1, -1.33333333333, 1.33333333333, -1.0, 1.0, base.a2dTopRight, (-0.222222, 0, -1.5))]
 
     def initHeadlessInterface(self):
+        # Now create a scene, and a camera, and a DisplayRegion.
+        self.render = NodePath('render')
+        self.camera = self.render.attachNewNode('camera')
+        self.camNode = Camera('cam')
+        self.camLens = self.camNode.getLens()
+        self.cam = self.camera.attachNewNode(self.camNode)
+        base.cam = self.cam
+
+        dr = self.buffer.makeDisplayRegion()
+        dr.setCamera(self.cam)
+
+        if hasattr(base, 'setCamNode'):
+            base.setCamNode(self.cam)
+
+        # The typical showbase builtins will return None if it can't find a window, so let's use our own.
+        __builtins__['camera'] = self.camera
+        __builtins__['cam'] = self.cam
+        __builtins__['render'] = self.render
+        return
+
         # borrowed from OffscreenRenderBuffer module
         # Get the graphics pipe.
         selection = GraphicsPipeSelection.getGlobalPtr()
@@ -319,6 +339,7 @@ class ModularBase(ToonBase.ToonBase):
         self.camNode = Camera('cam')
         self.camLens = self.camNode.getLens()
         self.cam = self.camera.attachNewNode(self.camNode)
+        base.cam = self.cam
 
         dr = self.buffer.makeDisplayRegion()
         dr.setCamera(self.cam)

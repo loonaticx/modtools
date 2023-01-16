@@ -6,7 +6,7 @@ Example:
 ```
 modtools
         | extensions
-		            | toon_snapshot
-			    | my_mod
+		    | toon_snapshot
+		    | my_mod
 
 ```

@@ -24,14 +24,19 @@ class game:
     process = "client"
 builtins.game = game()
 
-
 import time
 import os
 import sys
 import random
 from panda3d.core import *
 
-print(sys.path)
+"""
+You may need to edit this file depending on where your prc file is located.
+"""
+loadPrcFile('etc/Configrc.prc')
+loadPrcFileData("", "model-path resources")
+loadPrcFileData("", "default-model-extension .bam")
+
 
 # See if we have a launcher, if we do not, make an empty one
 try:
@@ -62,7 +67,14 @@ print('ToontownStart: Game2 is finished.')
 # Ok, now we know we are clear from the flash into, fire it up
 print('ToontownStart: Starting the game.')
 
-from toontown.toonbase.ToontownModules import *
+# depending on what your build is, we may or may need these guys:
+try:
+    from otp.otpbase.OTPModules import *
+    # Toontown specific modules
+    from panda3d.toontown import *
+except:
+    pass
+
 from panda3d.core import Loader as PandaLoader
 
 if launcher.isDummy():
@@ -73,9 +85,6 @@ if launcher.isDummy():
     http = HTTPClient()
 else:
     http = launcher.http
-
-# Preload the background scene before the window is even created
-tempLoader = PandaLoader()
 
 from direct.gui import DirectGuiGlobals
 print('ToontownStart: setting default font')
@@ -105,8 +114,48 @@ if __debug__ and ConfigVariableBool('want-debug-tools', False).getValue():
 ConfigVariableDouble('decompressor-step-time').setValue(0.01)
 ConfigVariableDouble('extractor-step-time').setValue(0.01)
 
+# todo: move these to ModularBase
 # DirectGuiGlobals.setDefaultRolloverSound(base.loader.loadSfx("phase_3/audio/sfx/GUI_rollover.mp3"))
 # DirectGuiGlobals.setDefaultClickSound(base.loader.loadSfx("phase_3/audio/sfx/GUI_create_toon_fwd.mp3"))
 # DirectGuiGlobals.setDefaultDialogGeom(loader.loadModel('phase_3/models/gui/dialog_box_gui'))
 
+"""
+Example Usage + Notes
+"""
+
+# You'd put this chunk on the top of the file, preferably before all the other imports.
+if __name__ == "__main__":
+    # VVVV Uncomment me VVVV
+    # from modtools.toontown.toonbase import ModularStart
+
+    # You can either run ModularBase or ToonBase. Either one will work! (Preferably ModularBase, though.)
+    from modtools.toontown.toonbase.ModularBase import ModularBase
+
+    # Very important that you set base to this within the module.
+    base = ModularBase()
+
+    # We can call some extra methods if we need them for our instance:
+    base.initCR()  # Initialize Client Repository (defines base.cr)
+    base.startConnection()  # Loads in our client into the PAT screen, as it does usually.
+
+###
+
+# You'd put this chunk on the bottom of the file, outside any class/function scope.
+if __name__ == "__main__":
+    # Put whatever you wanna call here (preferably related to the module you're putting this into)
+    # Ex: toontown/suit/Suit.py
+
+    # from toontown.suit import Suit
+    # s = Suit.Suit()
+    # from toontown.suit import SuitDNA
+    # d = SuitDNA.SuitDNA()
+    # d.newSuit('tbc')
+    # s.setDNA(d)
+    # s.loop('neutral')
+    # s.reparentTo(render)
+    # s.setPos(0, 0, 0)
+    # base.oobe()
+
+    # Lastly, we need to call this for anything to pop up.
+    base.run()
 

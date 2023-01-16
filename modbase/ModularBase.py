@@ -13,10 +13,8 @@ from direct.showbase.PythonUtil import *
 from toontown.toonbase import ToontownGlobals
 from direct.directnotify import DirectNotifyGlobal
 from toontown.toonbase  import ToontownLoader
-from toontown.toonbase.ToontownPostProcess import ToontownPostProcess
 from direct.gui import DirectGuiGlobals
 from direct.gui.DirectGui import *
-from toontown.toonbase.ToontownModules import *
 import sys
 import os
 import math
@@ -24,21 +22,31 @@ import math
 from toontown.toonbase import TTLocalizer
 from toontown.toonbase import ToontownBattleGlobals
 from toontown.launcher import ToontownDownloadWatcher
-from toontown.effects.PlanarReflector import PlanarReflector
 from toontown.toonbase import ToonBase
+
+try:
+    from toontown.toonbase.ToontownModules import *
+    from toontown.effects.PlanarReflector import PlanarReflector
+    from toontown.toonbase.ToontownPostProcess import ToontownPostProcess
+except:
+    pass
 
 class ModularBase(ToonBase.ToonBase):
     def __init__(self, pipe = 'pandagl', wantHotkeys=True):
         self.selectedPipe = pipe
-        ToonBase.ToonBase.__init__(self)
+        ToonBase.ToonBase.__init__(self, self.selectedPipe)
 
         self.modular = True
 
         # TODO: CLEANUP LATER
 
         if not config.GetInt('ignore-user-options', 0):
-            self.settings = ToontownSettings.ToontownSettings()
-            self.loadFromSettings()
+            try:
+                self.settings = ToontownSettings.ToontownSettings()
+                self.loadFromSettings()
+            except Exception as e:
+                print(e)
+                self.settings = None
         else:
             self.settings = None
 
@@ -173,6 +181,7 @@ class ModularBase(ToonBase.ToonBase):
         self.oldX = max(1, base.win.getXSize())
         self.oldY = max(1, base.win.getYSize())
         self.aspectRatio = float(self.oldX) / self.oldY
+        self.vfs = VirtualFileSystem.getGlobalPtr()
 
     def initCR(self, serverVersion = 'tto-dev'):
         """
@@ -187,7 +196,7 @@ class ModularBase(ToonBase.ToonBase):
         This requires a local server to be up and running.
         """
         if base.cr is None:
-            self.notify.error("startHeadlessShow(): You forgot to call base.initCR() first!")
+            self.notify.error("startConnection(): You forgot to call base.initCR() first!")
             return
 
         gameServer = '127.0.0.1'
@@ -241,6 +250,9 @@ class ModularBase(ToonBase.ToonBase):
         base.localAvatar.generate()
 
     def initMarginManager(self):
+        # We need a node to be the parent of all of the 2-d onscreen
+        # messages along the margins.  This should be in front of many
+        # things, but not all things.
         self.marginManager = MarginManager()
         self.margins = self.aspect2d.attachNewNode(self.marginManager, DirectGuiGlobals.MIDGROUND_SORT_INDEX + 1)
         mm = self.marginManager

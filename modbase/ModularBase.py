@@ -37,6 +37,9 @@ class ModularBase(ToonBase.ToonBase):
         ToonBase.ToonBase.__init__(self, self.selectedPipe)
 
         self.modular = True
+        self.headless = pipe == 'none' or pipe == 'offscreen'
+        if self.headless:
+            self.initHeadlessInterface()
 
         # TODO: CLEANUP LATER
 
@@ -266,6 +269,62 @@ class ModularBase(ToonBase.ToonBase):
          mm.addGridCell(4.5, 0, -1.33333333333, 1.33333333333, -1.0, 1.0, base.a2dBottomCenter, (0.888889, 0, 0.166667))]
         self.rightCells = [mm.addGridCell(5, 2, -1.33333333333, 1.33333333333, -1.0, 1.0, base.a2dTopRight, (-0.222222, 0, -1.16667)), mm.addGridCell(5, 1, -1.33333333333, 1.33333333333, -1.0, 1.0, base.a2dTopRight, (-0.222222, 0, -1.5))]
 
+    def initHeadlessInterface(self):
+        # borrowed from OffscreenRenderBuffer module
+        # Get the graphics pipe.
+        selection = GraphicsPipeSelection.getGlobalPtr()
+
+        # Use tinydisplay for software rendering.
+        # Moving away from Mesa due to general bugginess.
+        pipeList = [
+            ('TinyOffscreenGraphicsPipe', 'tinydisplay'),
+        ]
+
+        for pipeName, libname in pipeList:
+            self.pipe = selection.makePipe(pipeName, libname)
+            if self.pipe:
+                break
+
+        if not self.pipe:
+            self.pipe = selection.makeDefaultPipe()
+
+        assert self.pipe
+
+        # Create a GraphicsEngine to manage rendering.
+        # It might be better if we shared this with other GraphicsEngines.
+        self.graphicsEngine = GraphicsEngine()
+
+        # Open an offscreen buffer.
+        props = WindowProperties.getDefault()
+        props.setSize(1024, 1024)
+        fbprops = FrameBufferProperties(FrameBufferProperties.getDefault())
+        fbprops.setBackBuffers(0)
+        flags = GraphicsPipe.BFFbPropsOptional | GraphicsPipe.BFRefuseWindow
+
+        self.buffer = self.graphicsEngine.makeOutput(
+            self.pipe, 'buffer', 0, fbprops, props, flags
+        )
+        assert self.buffer
+
+        # Crank up the texture filtering quality for tinydisplay
+        self.buffer.getGsg().setTextureQualityOverride(Texture.QLBest)
+
+        # Require all the textures to be available now.
+        self.buffer.getGsg().setIncompleteRender(False)
+
+        # Now create a scene, and a camera, and a DisplayRegion.
+        self.render = NodePath('render')
+        self.camera = self.render.attachNewNode('camera')
+        self.camNode = Camera('cam')
+        self.camLens = self.camNode.getLens()
+        self.cam = self.camera.attachNewNode(self.camNode)
+
+        dr = self.buffer.makeDisplayRegion()
+        dr.setCamera(self.cam)
+
+        # The typical showbase builtins will return None if it can't find a window, so let's use our own.
+        __builtins__['camera'] = self.camera
+        __builtins__['render'] = self.render
 
 
     def toggleCollisions(self):

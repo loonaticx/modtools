@@ -122,15 +122,16 @@ class ModularBase(ToonBase.ToonBase):
         self.loader = ToontownLoader.ToontownLoader(self)
         __builtins__['loader'] = self.loader
         oldLoader.destroy()
-        self.accept('PandaPaused', self.disableAllAudio)
-        self.accept('PandaRestarted', self.enableAllAudio)
+        if not self.headless:
+            self.accept('PandaPaused', self.disableAllAudio)
+            self.accept('PandaRestarted', self.enableAllAudio)
         self.friendMode = self.config.GetBool('switchboard-friends', 0)
         self.wantPets = self.config.GetBool('want-pets', 1)
         self.wantBingo = self.config.GetBool('want-fish-bingo', 1)
         self.wantKarts = self.config.GetBool('want-karts', 1)
         self.wantNewSpecies = self.config.GetBool('want-new-species', 0)
         self.inactivityTimeout = self.config.GetFloat('inactivity-timeout', ToontownGlobals.KeyboardTimeout)
-        if self.inactivityTimeout:
+        if not self.headless and self.inactivityTimeout:
             self.notify.debug('Enabling Panda timeout: %s' % self.inactivityTimeout)
             self.mouseWatcherNode.setInactivityTimeout(self.inactivityTimeout)
         self.randomMinigameAbort = self.config.GetBool('random-minigame-abort', 0)
@@ -182,9 +183,10 @@ class ModularBase(ToonBase.ToonBase):
         self.canScreenShot = 1
         self.glitchCount = 0
         self.walking = 0
-        self.oldX = max(1, base.win.getXSize())
-        self.oldY = max(1, base.win.getYSize())
-        self.aspectRatio = float(self.oldX) / self.oldY
+        if not self.headless:
+            self.oldX = max(1, base.win.getXSize())
+            self.oldY = max(1, base.win.getYSize())
+            self.aspectRatio = float(self.oldX) / self.oldY
         self.vfs = VirtualFileSystem.getGlobalPtr()
 
     def initCR(self, serverVersion = 'tto-dev'):

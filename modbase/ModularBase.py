@@ -53,7 +53,7 @@ class ModularBase(ToonBase.ToonBase):
         else:
             self.settings = None
 
-        if wantHotkeys:
+        if wantHotkeys and not self.headless:
             self.accept('c', self.toggleCollisions)
             self.accept('x', self.toggleRenderCollisions)
             self.accept('q', self.exitShow)

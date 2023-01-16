@@ -323,8 +323,12 @@ class ModularBase(ToonBase.ToonBase):
         dr = self.buffer.makeDisplayRegion()
         dr.setCamera(self.cam)
 
+        if hasattr(base, 'setCamNode'):
+            base.setCamNode(self.cam)
+
         # The typical showbase builtins will return None if it can't find a window, so let's use our own.
         __builtins__['camera'] = self.camera
+        __builtins__['cam'] = self.cam
         __builtins__['render'] = self.render
 
 
